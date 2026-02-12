@@ -16,7 +16,7 @@
             --pink-light: #ffafbd;
             --pink-dark: #ffc3a0;
             --heart-red: #ff4d6d;
-            --glass: rgba(255, 255, 255, 0.88);
+            --glass: rgba(255, 255, 255, 0.9);
             --shadow: rgba(255, 77, 109, 0.3);
         }
 
@@ -33,9 +33,8 @@
             font-family: 'Quicksand', sans-serif;
             overflow: hidden;
             height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 100vw;
+            position: relative;
         }
 
         @keyframes gradientBG {
@@ -44,18 +43,34 @@
             100% { background-position: 0% 50%; }
         }
 
+        .container {
+            position: relative;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         .card {
             background: var(--glass);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            padding: 3.5rem 2.5rem;
+            padding: 3rem;
             border-radius: 40px;
             box-shadow: 0 25px 50px -12px var(--shadow);
             text-align: center;
             z-index: 10;
             max-width: 600px;
             width: 90%;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            /* Ensure card doesn't block the fixed button if they overlap */
+            pointer-events: none; 
+        }
+        
+        /* Re-enable pointer events for children of card */
+        .card > * {
+            pointer-events: auto;
         }
 
         h1 {
@@ -88,17 +103,17 @@
             background: linear-gradient(45deg, #ff4d6d, #ff758c);
             color: white;
             box-shadow: 0 10px 20px -5px var(--shadow);
-            z-index: 5;
+            z-index: 50; /* Higher than No button usually */
         }
 
         .no-btn {
             background: #ffffff;
             color: #777;
             position: fixed; 
-            z-index: 20;
+            z-index: 100; /* Highest priority to ensure hover works */
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            /* Smooth transitions for moving */
-            transition: top 0.3s ease, left 0.3s ease, transform 0.2s;
+            /* Faster transition to feel responsive */
+            transition: top 0.2s ease, left 0.2s ease; 
         }
 
         .emoji-feedback {
@@ -133,6 +148,8 @@
             border-radius: 50%;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             z-index: 1000;
+            cursor: pointer;
+            pointer-events: auto;
         }
     </style>
 </head>
@@ -167,7 +184,8 @@
         function App() {
             const [started, setStarted] = useState(false);
             const [accepted, setAccepted] = useState(false);
-            const [noPos, setNoPos] = useState({ top: '60%', left: '55%' });
+            // Initial Position: Center-ish
+            const [noPos, setNoPos] = useState({ top: '60%', left: '60%' });
             const [yesScale, setYesScale] = useState(1);
             const [sadCount, setSadCount] = useState(0);
             const [muted, setMuted] = useState(false);
@@ -183,15 +201,6 @@
                 "I'll be very sad... 😭",
                 "Click YES! 👉💕"
             ];
-
-            // Reset button position if screen size changes
-            useEffect(() => {
-                const handleResize = () => {
-                    setNoPos({ top: '60%', left: '55%' });
-                };
-                window.addEventListener('resize', handleResize);
-                return () => window.removeEventListener('resize', handleResize);
-            }, []);
 
             const initApp = () => {
                 setStarted(true);
@@ -211,20 +220,36 @@
             const moveNo = () => {
                 playSfx(sadAudio);
                 
-                // 1. Get current button dimensions
-                const btnWidth = noBtnRef.current ? noBtnRef.current.offsetWidth : 120;
-                const btnHeight = noBtnRef.current ? noBtnRef.current.offsetHeight : 60;
+                // --- FOOLPROOF BOUNDARY LOGIC ---
+                
+                // 1. Get exact button size (safely fallback to 150x60 if not rendered)
+                const btnRect = noBtnRef.current ? noBtnRef.current.getBoundingClientRect() : { width: 150, height: 60 };
+                const btnWidth = btnRect.width;
+                const btnHeight = btnRect.height;
 
-                // 2. Define safe boundary padding
-                const padding = 25;
+                // 2. Define a safe margin (padding from edge)
+                const margin = 50; 
 
-                // 3. Calculate max available space
-                const maxX = window.innerWidth - btnWidth - padding;
-                const maxY = window.innerHeight - btnHeight - padding;
+                // 3. Get Window Dimensions
+                const winWidth = window.innerWidth;
+                const winHeight = window.innerHeight;
 
-                // 4. Generate safe random coordinates
-                const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
-                const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+                // 4. Calculate the maximum allowable X and Y
+                // The button can go from 'margin' to 'window width - button width - margin'
+                const minX = margin;
+                const maxX = winWidth - btnWidth - margin;
+                
+                const minY = margin;
+                const maxY = winHeight - btnHeight - margin;
+
+                // 5. Generate Random
+                let randomX = Math.random() * (maxX - minX) + minX;
+                let randomY = Math.random() * (maxY - minY) + minY;
+
+                // 6. CLAMP IT (The Safety Net)
+                // This forces the value to stay within bounds even if math goes weird
+                randomX = Math.min(Math.max(randomX, minX), maxX);
+                randomY = Math.min(Math.max(randomY, minY), maxY);
 
                 setNoPos({ top: `${randomY}px`, left: `${randomX}px` });
                 setSadCount(prev => prev + 1);
@@ -282,7 +307,7 @@
                                 ref={noBtnRef}
                                 className="no-btn"
                                 onMouseEnter={moveNo}
-                                onClick={moveNo}
+                                onClick={moveNo} // Tap support for mobile
                                 style={{ top: noPos.top, left: noPos.left }}
                             >
                                 No 💔
