@@ -13,16 +13,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@500;700&display=swap');
 
         :root {
-            --pink-light: #ffafbd;
-            --pink-dark: #ffc3a0;
             --heart-red: #ff4d6d;
             --glass: rgba(255, 255, 255, 0.9);
             --shadow: rgba(255, 77, 109, 0.3);
-        }
-
-        * {
-            box-sizing: border-box;
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="%23ff4d6d" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'), auto;
         }
 
         body {
@@ -31,10 +24,9 @@
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
             font-family: 'Quicksand', sans-serif;
-            overflow: hidden;
+            overflow: hidden; /* STRICTLY NO SCROLLBARS */
             height: 100vh;
             width: 100vw;
-            position: relative;
         }
 
         @keyframes gradientBG {
@@ -44,7 +36,6 @@
         }
 
         .container {
-            position: relative;
             height: 100%;
             width: 100%;
             display: flex;
@@ -64,93 +55,70 @@
             max-width: 600px;
             width: 90%;
             border: 1px solid rgba(255, 255, 255, 0.6);
-            /* Ensure card doesn't block the fixed button if they overlap */
-            pointer-events: none; 
-        }
-        
-        /* Re-enable pointer events for children of card */
-        .card > * {
-            pointer-events: auto;
         }
 
         h1 {
             font-family: 'Dancing Script', cursive;
-            font-size: 2.8rem;
+            font-size: 2.5rem;
             color: var(--heart-red);
-            margin: 0 0 1.5rem 0;
-            line-height: 1.2;
+            margin-bottom: 1.5rem;
         }
 
-        .button-group {
+        /* Container for the buttons to sit in initially */
+        .button-placeholder-area {
             display: flex;
             gap: 25px;
             justify-content: center;
             align-items: center;
-            min-height: 140px;
+            min-height: 100px;
         }
 
         button {
-            padding: 18px 40px;
+            padding: 15px 40px;
             font-size: 1.3rem;
             border: none;
             border-radius: 100px;
             font-weight: 700;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
-            cursor: inherit;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
 
         .yes-btn {
             background: linear-gradient(45deg, #ff4d6d, #ff758c);
             color: white;
             box-shadow: 0 10px 20px -5px var(--shadow);
-            z-index: 50; /* Higher than No button usually */
+            z-index: 20;
         }
 
+        /* ABSOLUTE SAFETY: 
+           This button is styled to float freely on the screen.
+           We use 'fixed' so it ignores all parent transforms.
+        */
         .no-btn {
             background: #ffffff;
             color: #777;
             position: fixed; 
-            z-index: 100; /* Highest priority to ensure hover works */
+            z-index: 9999; /* Always on top */
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            /* Faster transition to feel responsive */
-            transition: top 0.2s ease, left 0.2s ease; 
+            transition: top 0.2s ease, left 0.2s ease;
+            width: 120px; /* Fixed width for better math */
+            height: 60px; /* Fixed height for better math */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .emoji-feedback {
-            font-size: 1.4rem;
-            color: var(--heart-red);
-            font-weight: 700;
-            height: 35px;
-            margin-bottom: 10px;
-        }
-
+        /* Cursor & Trails */
+        * { cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="%23ff4d6d" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'), auto; }
+        
         .trail-heart {
             position: fixed;
             pointer-events: none;
-            z-index: 999;
+            z-index: 100;
             font-size: 1.5rem;
             animation: scatter 0.8s ease-out forwards;
         }
-
-        @keyframes scatter {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: translateY(-60px) scale(0); opacity: 0; }
-        }
-
-        .mute-toggle {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            z-index: 1000;
-            cursor: pointer;
-            pointer-events: auto;
-        }
+        @keyframes scatter { to { transform: translateY(-50px); opacity: 0; } }
     </style>
 </head>
 <body>
@@ -162,38 +130,20 @@
         const SAD_SFX = "https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3";
         const HAPPY_SFX = "https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3";
 
-        const HeartCursor = () => {
-            const [particles, setParticles] = useState([]);
-            useEffect(() => {
-                const handleMouseMove = (e) => {
-                    const id = Date.now();
-                    setParticles(prev => [...prev.slice(-8), { id, x: e.clientX, y: e.clientY }]);
-                };
-                window.addEventListener('mousemove', handleMouseMove);
-                return () => window.removeEventListener('mousemove', handleMouseMove);
-            }, []);
-            return (
-                <div>
-                    {particles.map(p => (
-                        <span key={p.id} className="trail-heart" style={{ left: p.x, top: p.y }}>❤️</span>
-                    ))}
-                </div>
-            );
-        };
-
         function App() {
             const [started, setStarted] = useState(false);
             const [accepted, setAccepted] = useState(false);
-            // Initial Position: Center-ish
-            const [noPos, setNoPos] = useState({ top: '60%', left: '60%' });
             const [yesScale, setYesScale] = useState(1);
             const [sadCount, setSadCount] = useState(0);
-            const [muted, setMuted] = useState(false);
             
-            const noBtnRef = useRef(null);
+            // Initial position is centered slightly below the card
+            // We set this on mount to be screen-relative
+            const [noPos, setNoPos] = useState({ top: '60%', left: '60%' });
+            
             const sadAudio = useRef(new Audio(SAD_SFX));
             const happyAudio = useRef(new Audio(HAPPY_SFX));
 
+            // Messages
             const messages = [
                 "Mr. Chirag, please? 🥺",
                 "Don't break my heart! 💔",
@@ -202,52 +152,57 @@
                 "Click YES! 👉💕"
             ];
 
+            // 1. Initialize Audio
             const initApp = () => {
                 setStarted(true);
                 sadAudio.current.play().then(() => {
                     sadAudio.current.pause();
                     sadAudio.current.currentTime = 0;
                 }).catch(() => {});
+                
+                // Set initial position of NO button to be safe
+                const centerX = window.innerWidth / 2 + 80;
+                const centerY = window.innerHeight / 2 + 80;
+                setNoPos({ top: `${centerY}px`, left: `${centerX}px` });
             };
 
             const playSfx = (audio) => {
-                if (!muted) {
+                try {
                     audio.current.currentTime = 0;
-                    audio.current.play().catch(() => {});
-                }
+                    audio.current.play();
+                } catch (e) {}
             };
 
+            // 2. THE LOGIC FIX
             const moveNo = () => {
                 playSfx(sadAudio);
-                
-                // --- FOOLPROOF BOUNDARY LOGIC ---
-                
-                // 1. Get exact button size (safely fallback to 150x60 if not rendered)
-                const btnRect = noBtnRef.current ? noBtnRef.current.getBoundingClientRect() : { width: 150, height: 60 };
-                const btnWidth = btnRect.width;
-                const btnHeight = btnRect.height;
 
-                // 2. Define a safe margin (padding from edge)
-                const margin = 50; 
+                // Fixed Dimensions of the button (from CSS)
+                const btnWidth = 120; 
+                const btnHeight = 60;
+                
+                // Safety Buffer (distance from edge)
+                const buffer = 50;
 
-                // 3. Get Window Dimensions
+                // Available Screen Real Estate
                 const winWidth = window.innerWidth;
                 const winHeight = window.innerHeight;
 
-                // 4. Calculate the maximum allowable X and Y
-                // The button can go from 'margin' to 'window width - button width - margin'
-                const minX = margin;
-                const maxX = winWidth - btnWidth - margin;
+                // Calculate Valid Range
+                // Minimum: buffer
+                // Maximum: window - button size - buffer
+                const minX = buffer;
+                const maxX = winWidth - btnWidth - buffer;
                 
-                const minY = margin;
-                const maxY = winHeight - btnHeight - margin;
+                const minY = buffer;
+                const maxY = winHeight - btnHeight - buffer;
 
-                // 5. Generate Random
+                // Generate Random
                 let randomX = Math.random() * (maxX - minX) + minX;
                 let randomY = Math.random() * (maxY - minY) + minY;
 
-                // 6. CLAMP IT (The Safety Net)
-                // This forces the value to stay within bounds even if math goes weird
+                // CLAMP (Safety Net): 
+                // Ensure X is never less than minX and never more than maxX
                 randomX = Math.min(Math.max(randomX, minX), maxX);
                 randomY = Math.min(Math.max(randomY, minY), maxY);
 
@@ -258,7 +213,7 @@
 
             if (!started) {
                 return (
-                    <div className="container" onClick={initApp}>
+                    <div className="container" onClick={initApp} style={{cursor: 'pointer'}}>
                         <div className="card">
                             <h1>A special message for <br/>Mr. Chirag Patnaik</h1>
                             <button className="yes-btn">Click to Open 💌</button>
@@ -270,7 +225,6 @@
             if (accepted) {
                 return (
                     <div className="container">
-                        <HeartCursor />
                         <div className="card">
                             <h1>Yayyy! 💍💞</h1>
                             <p style={{fontSize: '1.5rem', fontWeight: 'bold'}}>Best Valentine ever!</p>
@@ -282,19 +236,15 @@
 
             return (
                 <div className="container">
-                    <HeartCursor />
-                    <button className="mute-toggle" onClick={() => setMuted(!muted)}>
-                        {muted ? "🔇" : "🔊"}
-                    </button>
-
+                    {/* The Card containing YES button and Text */}
                     <div className="card">
                         <h1>Mr. Chirag Patnaik, will you be my valentine for ever? 🥰🥰🫶🌹🥂💐</h1>
                         
-                        <div className="emoji-feedback">
+                        <div style={{minHeight: '40px', color: '#ff4d6d', fontWeight: 'bold', fontSize: '1.4rem'}}>
                             {sadCount > 0 && messages[Math.min(sadCount - 1, messages.length - 1)]}
                         </div>
 
-                        <div className="button-group">
+                        <div className="button-placeholder-area">
                             <button 
                                 className="yes-btn" 
                                 onClick={() => { playSfx(happyAudio); setAccepted(true); }}
@@ -302,18 +252,22 @@
                             >
                                 Yes 💕
                             </button>
-
-                            <button 
-                                ref={noBtnRef}
-                                className="no-btn"
-                                onMouseEnter={moveNo}
-                                onClick={moveNo} // Tap support for mobile
-                                style={{ top: noPos.top, left: noPos.left }}
-                            >
-                                No 💔
-                            </button>
+                            {/* Empty space where No used to be to keep layout stable */}
+                            <div style={{width: '120px'}}></div>
                         </div>
                     </div>
+
+                    {/* THE NO BUTTON - OUTSIDE THE CARD 
+                       This ensures it is relative to the WINDOW, not the CARD.
+                    */}
+                    <button 
+                        className="no-btn"
+                        style={{ top: noPos.top, left: noPos.left }}
+                        onMouseEnter={moveNo}
+                        onClick={moveNo}
+                    >
+                        No 💔
+                    </button>
                 </div>
             );
         }
