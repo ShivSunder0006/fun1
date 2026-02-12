@@ -16,7 +16,7 @@
             --pink-light: #ffafbd;
             --pink-dark: #ffc3a0;
             --heart-red: #ff4d6d;
-            --glass: rgba(255, 255, 255, 0.85);
+            --glass: rgba(255, 255, 255, 0.88);
             --shadow: rgba(255, 77, 109, 0.3);
         }
 
@@ -44,39 +44,18 @@
             100% { background-position: 0% 50%; }
         }
 
-        .container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            width: 100vw;
-            padding: 20px;
-        }
-
-        .start-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 175, 189, 0.9);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(10px);
-        }
-
         .card {
             background: var(--glass);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             padding: 3.5rem 2.5rem;
             border-radius: 40px;
             box-shadow: 0 25px 50px -12px var(--shadow);
             text-align: center;
             z-index: 10;
             max-width: 600px;
-            width: 100%;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            position: relative;
+            width: 90%;
+            border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
         h1 {
@@ -93,7 +72,6 @@
             justify-content: center;
             align-items: center;
             min-height: 140px;
-            margin-top: 1rem;
         }
 
         button {
@@ -102,7 +80,7 @@
             border: none;
             border-radius: 100px;
             font-weight: 700;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.3s;
             cursor: inherit;
         }
 
@@ -110,17 +88,17 @@
             background: linear-gradient(45deg, #ff4d6d, #ff758c);
             color: white;
             box-shadow: 0 10px 20px -5px var(--shadow);
-            text-transform: uppercase;
-            letter-spacing: 1px;
             z-index: 5;
         }
 
         .no-btn {
-            background: #eee;
+            background: #ffffff;
             color: #777;
             position: fixed; 
             z-index: 20;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            /* Smooth transitions for moving */
+            transition: top 0.3s ease, left 0.3s ease, transform 0.2s;
         }
 
         .emoji-feedback {
@@ -129,12 +107,6 @@
             font-weight: 700;
             height: 35px;
             margin-bottom: 10px;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
         }
 
         .trail-heart {
@@ -146,8 +118,8 @@
         }
 
         @keyframes scatter {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(0, -60px) scale(0); opacity: 0; }
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: translateY(-60px) scale(0); opacity: 0; }
         }
 
         .mute-toggle {
@@ -199,7 +171,8 @@
             const [yesScale, setYesScale] = useState(1);
             const [sadCount, setSadCount] = useState(0);
             const [muted, setMuted] = useState(false);
-
+            
+            const noBtnRef = useRef(null);
             const sadAudio = useRef(new Audio(SAD_SFX));
             const happyAudio = useRef(new Audio(HAPPY_SFX));
 
@@ -211,9 +184,17 @@
                 "Click YES! 👉💕"
             ];
 
+            // Reset button position if screen size changes
+            useEffect(() => {
+                const handleResize = () => {
+                    setNoPos({ top: '60%', left: '55%' });
+                };
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
             const initApp = () => {
                 setStarted(true);
-                // Safari/Chrome Audio Unlock
                 sadAudio.current.play().then(() => {
                     sadAudio.current.pause();
                     sadAudio.current.currentTime = 0;
@@ -229,19 +210,30 @@
 
             const moveNo = () => {
                 playSfx(sadAudio);
-                const maxX = window.innerWidth - 150;
-                const maxY = window.innerHeight - 80;
-                setNoPos({
-                    top: `${Math.max(20, Math.random() * maxY)}px`,
-                    left: `${Math.max(20, Math.random() * maxX)}px`
-                });
+                
+                // 1. Get current button dimensions
+                const btnWidth = noBtnRef.current ? noBtnRef.current.offsetWidth : 120;
+                const btnHeight = noBtnRef.current ? noBtnRef.current.offsetHeight : 60;
+
+                // 2. Define safe boundary padding
+                const padding = 25;
+
+                // 3. Calculate max available space
+                const maxX = window.innerWidth - btnWidth - padding;
+                const maxY = window.innerHeight - btnHeight - padding;
+
+                // 4. Generate safe random coordinates
+                const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+                const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+                setNoPos({ top: `${randomY}px`, left: `${randomX}px` });
                 setSadCount(prev => prev + 1);
                 setYesScale(prev => prev + 0.2);
             };
 
             if (!started) {
                 return (
-                    <div className="start-overlay" onClick={initApp}>
+                    <div className="container" onClick={initApp}>
                         <div className="card">
                             <h1>A special message for <br/>Mr. Chirag Patnaik</h1>
                             <button className="yes-btn">Click to Open 💌</button>
@@ -287,6 +279,7 @@
                             </button>
 
                             <button 
+                                ref={noBtnRef}
                                 className="no-btn"
                                 onMouseEnter={moveNo}
                                 onClick={moveNo}
