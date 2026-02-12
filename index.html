@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Mr. Chirag Patnaik 💞</title>
+    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Quicksand:wght@500;700&display=swap');
+
+        :root {
+            --pink-light: #ffafbd;
+            --pink-dark: #ffc3a0;
+            --heart-red: #ff4d6d;
+            --glass: rgba(255, 255, 255, 0.85);
+            --shadow: rgba(255, 77, 109, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="%23ff4d6d" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'), auto;
+        }
+
+        body {
+            margin: 0;
+            background: linear-gradient(-45deg, #ffafbd, #ffc3a0, #ffafbd, #ffc3f0);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: 'Quicksand', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100vw;
+            padding: 20px;
+        }
+
+        .start-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 175, 189, 0.9);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 3.5rem 2.5rem;
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px var(--shadow);
+            text-align: center;
+            z-index: 10;
+            max-width: 600px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            position: relative;
+        }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            font-size: 2.8rem;
+            color: var(--heart-red);
+            margin: 0 0 1.5rem 0;
+            line-height: 1.2;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            align-items: center;
+            min-height: 140px;
+            margin-top: 1rem;
+        }
+
+        button {
+            padding: 18px 40px;
+            font-size: 1.3rem;
+            border: none;
+            border-radius: 100px;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: inherit;
+        }
+
+        .yes-btn {
+            background: linear-gradient(45deg, #ff4d6d, #ff758c);
+            color: white;
+            box-shadow: 0 10px 20px -5px var(--shadow);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 5;
+        }
+
+        .no-btn {
+            background: #eee;
+            color: #777;
+            position: fixed; 
+            z-index: 20;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .emoji-feedback {
+            font-size: 1.4rem;
+            color: var(--heart-red);
+            font-weight: 700;
+            height: 35px;
+            margin-bottom: 10px;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .trail-heart {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            font-size: 1.5rem;
+            animation: scatter 0.8s ease-out forwards;
+        }
+
+        @keyframes scatter {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(0, -60px) scale(0); opacity: 0; }
+        }
+
+        .mute-toggle {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const SAD_SFX = "https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3";
+        const HAPPY_SFX = "https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3";
+
+        const HeartCursor = () => {
+            const [particles, setParticles] = useState([]);
+            useEffect(() => {
+                const handleMouseMove = (e) => {
+                    const id = Date.now();
+                    setParticles(prev => [...prev.slice(-8), { id, x: e.clientX, y: e.clientY }]);
+                };
+                window.addEventListener('mousemove', handleMouseMove);
+                return () => window.removeEventListener('mousemove', handleMouseMove);
+            }, []);
+            return (
+                <div>
+                    {particles.map(p => (
+                        <span key={p.id} className="trail-heart" style={{ left: p.x, top: p.y }}>❤️</span>
+                    ))}
+                </div>
+            );
+        };
+
+        function App() {
+            const [started, setStarted] = useState(false);
+            const [accepted, setAccepted] = useState(false);
+            const [noPos, setNoPos] = useState({ top: '60%', left: '55%' });
+            const [yesScale, setYesScale] = useState(1);
+            const [sadCount, setSadCount] = useState(0);
+            const [muted, setMuted] = useState(false);
+
+            const sadAudio = useRef(new Audio(SAD_SFX));
+            const happyAudio = useRef(new Audio(HAPPY_SFX));
+
+            const messages = [
+                "Mr. Chirag, please? 🥺",
+                "Don't break my heart! 💔",
+                "Think of the roses! 🌹",
+                "I'll be very sad... 😭",
+                "Click YES! 👉💕"
+            ];
+
+            const initApp = () => {
+                setStarted(true);
+                // Safari/Chrome Audio Unlock
+                sadAudio.current.play().then(() => {
+                    sadAudio.current.pause();
+                    sadAudio.current.currentTime = 0;
+                }).catch(() => {});
+            };
+
+            const playSfx = (audio) => {
+                if (!muted) {
+                    audio.current.currentTime = 0;
+                    audio.current.play().catch(() => {});
+                }
+            };
+
+            const moveNo = () => {
+                playSfx(sadAudio);
+                const maxX = window.innerWidth - 150;
+                const maxY = window.innerHeight - 80;
+                setNoPos({
+                    top: `${Math.max(20, Math.random() * maxY)}px`,
+                    left: `${Math.max(20, Math.random() * maxX)}px`
+                });
+                setSadCount(prev => prev + 1);
+                setYesScale(prev => prev + 0.2);
+            };
+
+            if (!started) {
+                return (
+                    <div className="start-overlay" onClick={initApp}>
+                        <div className="card">
+                            <h1>A special message for <br/>Mr. Chirag Patnaik</h1>
+                            <button className="yes-btn">Click to Open 💌</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (accepted) {
+                return (
+                    <div className="container">
+                        <HeartCursor />
+                        <div className="card">
+                            <h1>Yayyy! 💍💞</h1>
+                            <p style={{fontSize: '1.5rem', fontWeight: 'bold'}}>Best Valentine ever!</p>
+                            <div style={{fontSize: '4rem', marginTop: '20px'}}>🥰🫶🌹🥂💐</div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="container">
+                    <HeartCursor />
+                    <button className="mute-toggle" onClick={() => setMuted(!muted)}>
+                        {muted ? "🔇" : "🔊"}
+                    </button>
+
+                    <div className="card">
+                        <h1>Mr. Chirag Patnaik, will you be my valentine for ever? 🥰🥰🫶🌹🥂💐</h1>
+                        
+                        <div className="emoji-feedback">
+                            {sadCount > 0 && messages[Math.min(sadCount - 1, messages.length - 1)]}
+                        </div>
+
+                        <div className="button-group">
+                            <button 
+                                className="yes-btn" 
+                                onClick={() => { playSfx(happyAudio); setAccepted(true); }}
+                                style={{ transform: `scale(${yesScale})` }}
+                            >
+                                Yes 💕
+                            </button>
+
+                            <button 
+                                className="no-btn"
+                                onMouseEnter={moveNo}
+                                onClick={moveNo}
+                                style={{ top: noPos.top, left: noPos.left }}
+                            >
+                                No 💔
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
